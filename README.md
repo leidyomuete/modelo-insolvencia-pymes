@@ -1,5 +1,7 @@
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/leidyomuete/modelo-insolvencia-pymes/blob/main/Modelo_insolvencia_Colab.ipynb)
 
+**Tablero interactivo con simulador:** https://leidyomuete.github.io/modelo-insolvencia-pymes/
+
 # Modelo predictivo de riesgo de insolvencia — Pymes manufactureras y comerciales (Colombia)
 
 Proyecto de grado — Maestría en Analítica de Datos para Contabilidad y Auditoría, Universidad Externado de Colombia.
@@ -13,6 +15,7 @@ individuales (Grupo 2 NIIF) reportados a la Superintendencia de Sociedades, 2016
 ```
 modelo_insolvencia/
 ├── config.py            <- TODAS las decisiones metodológicas (rutas, CIIU, etiqueta, horizonte, 70/30)
+├── index.html           <- tablero web (GitHub Pages): resultados, empresas y simulador
 ├── main.py              <- ejecuta el proceso completo
 ├── Modelo_insolvencia_Colab.ipynb  <- cuaderno para Google Colab
 ├── requirements.txt
@@ -25,7 +28,9 @@ modelo_insolvencia/
 │   ├── variables.py     <- SRS-02 indicadores (Tabla 1) + etiqueta t+1..t+3
 │   ├── modelado.py      <- SRS-03/04/05 SMOTE, RF, Logit, métricas, bootstrap, ROC
 │   ├── reporte.py       <- SRS-06/07 calificación por empresa, factores (SHAP), Excel
-│   └── nuevas.py        <- calificación de empresas que no están en la base (cifras o plantilla Excel)
+│   ├── nuevas.py        <- calificación de empresas que no están en la base (cifras o plantilla Excel)
+│   ├── tablero.py       <- genera index.html (datos + modelo liviano para el simulador)
+│   └── tablero_plantilla.html
 └── resultados/          <- se llena al ejecutar
 ```
 
@@ -49,6 +54,12 @@ necesita descargar los Excel. Modo rápido: unos 5–10 minutos; modo completo: 
 En el cuaderno, la celda 15 califica una empresa escribiendo sus cifras (miles de pesos) y la celda 16 califica
 varias empresas a la vez con `data/plantilla_empresas_nuevas.xlsx`. La celda 13 muestra la trayectoria de riesgo
 de una empresa de la base por su NIT.
+
+### Tablero web
+`index.html` es un archivo único (sin servidor ni librerías externas) con cuatro secciones: resumen, desempeño
+del modelo, empresas calificadas (búsqueda por NIT, trayectoria de riesgo) y simulador de indicadores.
+Se publica con **Settings → Pages → Deploy from a branch → main / (root)**. `main.py` y la celda 12b del
+cuaderno lo regeneran cuando cambia el modelo.
 
 ## Fuentes de datos (carpeta `bd/pymes_individuales-AAAA/`)
 

@@ -16,7 +16,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config as cfg
-from src import carga, variables, modelado, reporte, macro
+from src import carga, variables, modelado, reporte, macro, tablero
 
 
 def main(desde=1):
@@ -56,6 +56,8 @@ def main(desde=1):
         if (cfg.RUTA_RESULTADOS / "01_bitacora_depuracion.csv").exists() else None
     reporte.exportar(calif, metr, imp, bit)
     reporte.guardar_modelo(rf, cols)
+    print("\n[6/6] Tablero web (index.html para GitHub Pages)")
+    tablero.generar_tablero(panel_ind, base, cols, rf, lr)
     print(f"\nListo en {(time.time() - t0) / 60:.1f} minutos. Resultados en: {cfg.RUTA_RESULTADOS}")
 
 

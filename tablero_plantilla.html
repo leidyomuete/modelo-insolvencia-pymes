@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riesgo de insolvencia — Pymes manufactureras y comerciales</title>
+<style>
+:root{
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --goodtext:#006300;
+  --band-good:rgba(12,163,12,.08); --band-warn:rgba(250,178,25,.12); --band-crit:rgba(208,59,59,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --goodtext:#0ca30c;
+    --band-good:rgba(12,163,12,.14); --band-warn:rgba(250,178,25,.14); --band-crit:rgba(208,59,59,.16);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--s1)}
+header{padding:28px 24px 0;max-width:1240px;margin:0 auto}
+header h1{font-size:24px;line-height:1.25;margin:0 0 6px;font-weight:650}
+header p{margin:0;color:var(--ink2)}
+.links{margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+nav{max-width:1240px;margin:18px auto 0;padding:0 24px;display:flex;gap:4px;border-bottom:1px solid var(--grid);overflow-x:auto}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font:inherit;color:var(--ink2);cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+main{max-width:1240px;margin:0 auto;padding:20px 24px 60px}
+section[hidden]{display:none}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:16px 18px}
+.card h2{font-size:16px;margin:0 0 2px;font-weight:600}
+.card .sub{font-size:13px;color:var(--ink2);margin:0 0 10px}
+.kpi .lab{font-size:13px;color:var(--ink2)}
+.kpi .val{font-size:30px;font-weight:600;line-height:1.2;margin-top:4px}
+.kpi .note{font-size:12px;color:var(--muted);margin-top:2px}
+.note{font-size:12.5px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin:2px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
+.legend i.box{height:10px;width:10px;border-radius:2px}
+svg text{fill:var(--muted);font-size:11.5px}
+svg .lbl{fill:var(--ink2);font-size:12px}
+.tip{position:fixed;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--ring);border-radius:8px;
+     padding:8px 10px;font-size:12.5px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:20;display:none;min-width:120px;max-width:280px}
+.tip .t{color:var(--ink2);margin-bottom:4px}
+.tip .row{display:flex;align-items:center;gap:8px}
+.tip .row b{font-variant-numeric:tabular-nums}
+.tip .row i{width:12px;height:2px;display:inline-block}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--axis);padding:7px 8px;white-space:nowrap}
+td{border-bottom:1px solid var(--grid);padding:7px 8px;vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover,tbody tr.sel{background:var(--grid)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.badge::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+.Bajo{--c:var(--good)} .Medio{--c:var(--warn)} .Alto{--c:var(--crit)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.filters label{display:flex;flex-direction:column;font-size:12.5px;color:var(--ink2);gap:3px}
+input[type=search],select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--axis);border-radius:8px;background:var(--surface);color:var(--ink);min-width:150px}
+input[type=search]{min-width:240px}
+button.btn{font:inherit;font-size:14px;padding:7px 12px;border-radius:8px;border:1px solid var(--axis);background:var(--surface);color:var(--ink);cursor:pointer}
+button.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:10px;font-size:13px;color:var(--ink2)}
+.det h3{margin:0;font-size:18px}
+.det .meta{color:var(--ink2);font-size:13px;margin:2px 0 10px}
+.big{font-size:40px;font-weight:600;line-height:1.1}
+.sim{display:grid;gap:16px;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+@media (max-width:900px){.sim{grid-template-columns:1fr}}
+.slider{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:2px 10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--grid)}
+.slider label{font-size:13.5px}
+.slider output{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:13.5px}
+.slider input{grid-column:1/3;width:100%;accent-color:var(--s1)}
+.slider .ref{grid-column:1/3;font-size:11.5px;color:var(--muted)}
+.slider.changed output{color:var(--s1)}
+.res{position:sticky;top:12px}
+.sim > div:last-child{align-self:start;position:sticky;top:12px}
+.pair{display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap}
+.pair .lab{font-size:12.5px;color:var(--ink2)}
+.delta{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.delta.down{color:var(--goodtext)} .delta.up{color:var(--crit)}
+h4{margin:16px 0 6px;font-size:14px}
+.empty{color:var(--muted);font-size:13.5px;padding:14px 0}
+#cargando{max-width:1240px;margin:40px auto;padding:0 24px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Modelo predictivo de riesgo de insolvencia empresarial</h1>
+  <p>Pymes colombianas de los sectores manufacturero y comercial · Superintendencia de Sociedades <span id="h-anios"></span> · Random Forest + SMOTE frente a regresión logística</p>
+  <p class="note" style="margin-top:4px">Leidy Briggitte Muete Garzón · Maestría en Analítica de Datos para Contabilidad y Auditoría · Universidad Externado de Colombia</p>
+  <div class="links" id="links"></div>
+</header>
+<nav role="tablist" id="tabs">
+  <button role="tab" data-tab="resumen" aria-selected="true">Resumen</button>
+  <button role="tab" data-tab="modelo" aria-selected="false">Desempeño del modelo</button>
+  <button role="tab" data-tab="empresas" aria-selected="false">Empresas calificadas</button>
+  <button role="tab" data-tab="simulador" aria-selected="false">Simulador</button>
+</nav>
+<div id="cargando">Cargando datos…</div>
+<main id="app" hidden>
+
+<!-- ============================ RESUMEN ============================ -->
+<section id="resumen">
+  <div class="grid kpis">
+    <div class="card kpi"><div class="lab">Empresas analizadas</div><div class="val" id="k-emp">—</div><div class="note" id="k-emp-n"></div></div>
+    <div class="card kpi"><div class="lab">Observaciones para el modelo</div><div class="val" id="k-obs">—</div><div class="note">empresa-año con horizonte de 3 años</div></div>
+    <div class="card kpi"><div class="lab">Proporción en riesgo</div><div class="val" id="k-tasa">—</div><div class="note">presentan el evento en t+1 a t+3</div></div>
+    <div class="card kpi"><div class="lab">AUC Random Forest</div><div class="val" id="k-auc">—</div><div class="note" id="k-auc-n"></div></div>
+    <div class="card kpi"><div class="lab">Empresas en riesgo alto</div><div class="val" id="k-alto">—</div><div class="note" id="k-alto-n"></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card">
+      <h2>Proporción de empresas en riesgo por año</h2>
+      <p class="sub">% de empresas que en los tres años siguientes cumplen al menos un criterio de insolvencia</p>
+      <div class="legend" id="lg-anual"></div>
+      <div id="ch-anual"></div>
+    </div>
+    <div class="card">
+      <h2>Frecuencia de cada criterio de insolvencia</h2>
+      <p class="sub">% de estados financieros que cumplen el criterio, por sector</p>
+      <div class="legend" id="lg-crit"></div>
+      <div id="ch-crit"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Cómo leer este tablero</h2>
+    <p class="sub" style="margin:0">Una empresa se considera <b>en riesgo de insolvencia</b> si en alguno de los tres años siguientes: entra en proceso formal (acuerdo de reorganización, reestructuración o concordato), presenta patrimonio negativo, EBITDA negativo, razón corriente menor a 1 o cobertura de intereses menor a 1.
+    El modelo usa los estados financieros del año <i>t</i> para estimar la probabilidad de que eso ocurra. Los niveles son: <span class="badge Bajo">Bajo</span> menos de 30 %, <span class="badge Medio">Medio</span> 30 % a 60 % y <span class="badge Alto">Alto</span> 60 % o más.</p>
+  </div>
+</section>
+
+<!-- ============================ MODELO ============================ -->
+<section id="modelo" hidden>
+  <div class="grid g2">
+    <div class="card">
+      <h2>Curva ROC en el conjunto de prueba</h2>
+      <p class="sub" id="roc-sub"></p>
+      <div class="legend" id="lg-roc"></div>
+      <div id="ch-roc"></div>
+    </div>
+    <div class="card">
+      <h2>Métricas de evaluación</h2>
+      <p class="sub">Umbral de clasificación 0,5 · empresas no vistas en el entrenamiento</p>
+      <table><thead><tr><th>Métrica</th><th class="num">Random Forest + SMOTE</th><th class="num">Regresión logística + SMOTE</th></tr></thead><tbody id="t-met"></tbody></table>
+      <p class="note" id="met-note" style="margin-top:10px"></p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Indicadores con mayor capacidad explicativa</h2>
+    <p class="sub">Importancia por permutación del Random Forest: cuánto baja el AUC si se altera la variable</p>
+    <div id="ch-imp"></div>
+  </div>
+</section>
+
+<!-- ============================ EMPRESAS ============================ -->
+<section id="empresas" hidden>
+  <div class="filters">
+    <label>Buscar por NIT o razón social<input type="search" id="f-q" placeholder="Ej.: 860032586 o nombre"></label>
+    <label>Sector<select id="f-sector"><option value="">Todos</option></select></label>
+    <label>Departamento<select id="f-depto"><option value="">Todos</option></select></label>
+    <label>Nivel de riesgo<select id="f-nivel"><option value="">Todos</option><option>Alto</option><option>Medio</option><option>Bajo</option></select></label>
+  </div>
+  <div class="grid kpis" id="niv-tiles"></div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card">
+      <h2 id="t-emp-title">Empresas</h2>
+      <p class="sub">Ordenadas de mayor a menor probabilidad. Haga clic en una empresa para ver su detalle.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Empresa</th><th>Sector</th><th class="num">Probabilidad</th><th>Nivel</th></tr></thead><tbody id="t-emp"></tbody></table></div>
+      <div class="pager"><button class="btn" id="pg-prev">Anterior</button><span id="pg-info"></span><button class="btn" id="pg-next">Siguiente</button></div>
+    </div>
+    <div class="card det" id="detalle"><div class="empty">Seleccione una empresa de la tabla.</div></div>
+  </div>
+</section>
+
+<!-- ============================ SIMULADOR ============================ -->
+<section id="simulador" hidden>
+  <div class="filters">
+    <label>Empresa a simular<input type="search" id="s-q" list="s-list" placeholder="NIT o razón social"></label>
+    <datalist id="s-list"></datalist>
+    <button class="btn" id="s-tip-c">Empresa típica comercial</button>
+    <button class="btn" id="s-tip-m">Empresa típica manufacturera</button>
+    <button class="btn primary" id="s-reset">Restablecer valores</button>
+  </div>
+  <div class="sim">
+    <div class="card">
+      <h2 id="s-title">—</h2>
+      <p class="sub">Mueva un indicador y observe cómo cambia la probabilidad de riesgo. Debajo de cada control: valor real de la empresa y mediana de su sector.</p>
+      <h4>Indicadores financieros</h4>
+      <div id="s-fin"></div>
+      <h4>Entorno macroeconómico</h4>
+      <div id="s-mac"></div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>Resultado de la simulación</h2>
+        <p class="sub" id="s-hor"></p>
+        <div class="pair">
+          <div><div class="lab">Situación actual</div><div class="big" id="s-p0">—</div><div id="s-n0"></div></div>
+          <div><div class="lab">Escenario simulado</div><div class="big" id="s-p1">—</div><div id="s-n1"></div></div>
+          <div><div class="lab">Cambio</div><div class="delta" id="s-d">—</div></div>
+        </div>
+        <div id="ch-gauge" style="margin-top:14px"></div>
+        <h4>¿Qué indicador conviene mejorar?</h4>
+        <p class="sub">Reducción de la probabilidad si cada indicador llegara a la mediana de su sector (uno a la vez, desde el escenario actual)</p>
+        <div id="ch-sens"></div>
+        <p class="note" id="s-note"></p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script id="datos" type="application/octet-stream">__DATOS_GZIP_BASE64__</script>
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const fmtN = (v, d = 0) => v == null || isNaN(v) ? "—" : v.toLocaleString("es-CO", {minimumFractionDigits: d, maximumFractionDigits: d});
+const fmtP = (v, d = 1) => v == null || isNaN(v) ? "—" : (v * 100).toLocaleString("es-CO", {minimumFractionDigits: d, maximumFractionDigits: d}) + " %";
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+let D;
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(tag, text, cls) { const e = document.createElement(tag); e.textContent = text; if (cls) e.className = cls; return e; }
+
+// ---------- tooltip ----------
+const tip = $("tip");
+function showTip(ev, title, rows) {
+  tip.replaceChildren();
+  if (title) tip.appendChild(txt("div", title, "t"));
+  for (const r of rows) {
+    const d = document.createElement("div"); d.className = "row";
+    if (r.color) { const i = document.createElement("i"); i.style.background = r.color; d.appendChild(i); }
+    d.appendChild(txt("b", r.value)); d.appendChild(txt("span", r.label || ""));
+    tip.appendChild(d);
+  }
+  tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+const hideTip = () => tip.style.display = "none";
+
+function legend(id, items, box) {
+  const L = $(id); L.replaceChildren();
+  for (const it of items) {
+    const s = document.createElement("span"); const i = document.createElement("i");
+    if (box) i.className = "box"; i.style.background = it.color; s.appendChild(i); s.appendChild(document.createTextNode(it.label)); L.appendChild(s);
+  }
+}
+
+// ---------- line chart (shared x, crosshair) ----------
+function lineChart(box, {xs, series, yFmt, xFmt, yMax = 1, yMin = 0, height = 260, xTicks, diag, bands}) {
+  box.replaceChildren();
+  const W = Math.max(300, box.clientWidth), H = height, m = {l: 44, r: 14, t: 10, b: 28};
+  const svg = el("svg", {width: "100%", viewBox: `0 0 ${W} ${H}`, role: "img"}, box);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const X = v => m.l + (v - x0) / (x1 - x0 || 1) * (W - m.l - m.r);
+  const Y = v => H - m.b - (v - yMin) / (yMax - yMin) * (H - m.t - m.b);
+  if (bands) for (const b of bands) el("rect", {x: m.l, width: W - m.l - m.r, y: Y(b[1]), height: Y(b[0]) - Y(b[1]), fill: b[2]}, svg);
+  for (let i = 0; i <= 4; i++) {
+    const v = yMin + (yMax - yMin) * i / 4;
+    el("line", {x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: css(i ? "--grid" : "--axis"), "stroke-width": 1}, svg);
+    el("text", {x: m.l - 6, y: Y(v) + 4, "text-anchor": "end"}, svg).textContent = yFmt(v);
+  }
+  for (const t of (xTicks || xs)) el("text", {x: X(t), y: H - 8, "text-anchor": "middle"}, svg).textContent = xFmt(t);
+  if (diag) el("line", {x1: X(0), y1: Y(0), x2: X(1), y2: Y(1), stroke: css("--axis"), "stroke-dasharray": "4 4"}, svg);
+  for (const s of series) {
+    const pts = s.pts.filter(p => p[1] != null);
+    el("path", {d: pts.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1)).join(""), fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round"}, svg);
+    if (s.dots) for (const p of pts) el("circle", {cx: X(p[0]), cy: Y(p[1]), r: 4, fill: s.color, stroke: css("--surface"), "stroke-width": 2}, svg);
+  }
+  const cross = el("line", {y1: m.t, y2: H - m.b, stroke: css("--axis"), "stroke-width": 1, visibility: "hidden"}, svg);
+  const hit = el("rect", {x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent"}, svg);
+  hit.addEventListener("pointermove", ev => {
+    const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+    const xv = x0 + (px - m.l) / (W - m.l - m.r) * (x1 - x0);
+    let best = xs[0]; for (const v of xs) if (Math.abs(v - xv) < Math.abs(best - xv)) best = v;
+    cross.setAttribute("x1", X(best)); cross.setAttribute("x2", X(best)); cross.setAttribute("visibility", "visible");
+    const rows = series.map(s => {
+      let p = s.pts[0]; for (const q of s.pts) if (Math.abs(q[0] - best) < Math.abs(p[0] - best)) p = q;
+      return {color: s.color, value: yFmt(p[1], true), label: s.label};
+    });
+    showTip(ev, xFmt(best, true), rows);
+  });
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+}
+
+// ---------- horizontal bars (one or two series) ----------
+function barsH(box, {rows, keys, colors, labels, fmt, max}) {
+  box.replaceChildren();
+  const W = Math.max(300, box.clientWidth), lw = Math.min(230, W * 0.42), bh = 12, gap = 2, grp = keys.length * (bh + gap) + 12;
+  const H = rows.length * grp + 8;
+  const svg = el("svg", {width: "100%", viewBox: `0 0 ${W} ${H}`, role: "img"}, box);
+  const M = max || Math.max(...rows.flatMap(r => keys.map(k => r[k] || 0)));
+  const Xw = v => Math.max(0, v) / M * (W - lw - 70);
+  rows.forEach((r, i) => {
+    const y0 = 4 + i * grp;
+    el("text", {x: lw - 8, y: y0 + keys.length * (bh + gap) / 2 + 3, "text-anchor": "end", class: "lbl"}, svg).textContent = r.label;
+    keys.forEach((k, j) => {
+      const y = y0 + j * (bh + gap), w = Xw(r[k] || 0);
+      const rect = el("rect", {x: lw, y, width: Math.max(w, 1), height: bh, rx: 3, fill: colors[j]}, svg);
+      el("text", {x: lw + w + 6, y: y + bh - 2}, svg).textContent = fmt(r[k]);
+      const h = el("rect", {x: lw, y: y - 1, width: W - lw, height: bh + gap + 1, fill: "transparent"}, svg);
+      h.addEventListener("pointermove", ev => { rect.setAttribute("opacity", .8); showTip(ev, r.label, [{color: colors[j], value: fmt(r[k]), label: labels[j]}]); });
+      h.addEventListener("pointerleave", () => { rect.removeAttribute("opacity"); hideTip(); });
+    });
+  });
+}
+
+// ---------- modelo web (Random Forest liviano) ----------
+function predict(x) {
+  const M = D.web.modelo, n = M.variables.length, z = new Array(n);
+  for (let i = 0; i < n; i++) {
+    let v = x[i];
+    if (v == null || isNaN(v)) v = M.mediana[i];
+    else v = Math.min(Math.max(v, M.inf[i]), M.sup[i]);
+    z[i] = Math.fround(v);
+  }
+  let s = 0;
+  for (const a of M.arboles) {
+    let k = 0;
+    while (a.l[k] !== -1) k = z[a.f[k]] <= a.t[k] ? a.l[k] : a.r[k];
+    s += a.p[k];
+  }
+  return s / M.arboles.length;
+}
+const nivel = p => { for (const [k, [a, b]] of Object.entries(D.umbrales)) if (p >= a && p < b) return k; return "Alto"; };
+function badge(n) { const s = txt("span", n, "badge " + n); return s; }
+
+// ============================ RESUMEN ============================
+function drawResumen() {
+  const R = D.resumen;
+  $("k-emp").textContent = fmtN(R.empresas);
+  $("k-emp-n").textContent = fmtN(R.estados) + " estados financieros";
+  $("k-obs").textContent = fmtN(R.observaciones);
+  $("k-tasa").textContent = fmtP(R.tasa_riesgo);
+  $("k-auc").textContent = fmtN(D.metricas.rf.auc_roc, 3);
+  $("k-auc-n").textContent = "regresión logística: " + fmtN(D.metricas.lr.auc_roc, 3);
+  const alto = D.empresas.filter(e => e.nivel === "Alto").length;
+  $("k-alto").textContent = fmtN(alto);
+  $("k-alto-n").textContent = `de ${fmtN(D.empresas.length)} calificadas con EEFF ${D.anio}`;
+  const c1 = css("--s1"), c2 = css("--s2");
+  legend("lg-anual", [{label: "Comercial", color: c1}, {label: "Manufacturero", color: c2}]);
+  const xs = D.riesgo_anual.map(r => r.anio);
+  const ymax = Math.ceil(Math.max(...D.riesgo_anual.flatMap(r => [r.Comercial, r.Manufacturero])) / 0.2) * 0.2;
+  lineChart($("ch-anual"), {xs, yMax: ymax, xFmt: v => String(v), yFmt: v => fmtP(v, 0),
+    series: [{label: "Comercial", color: c1, dots: true, pts: D.riesgo_anual.map(r => [r.anio, r.Comercial])},
+             {label: "Manufacturero", color: c2, dots: true, pts: D.riesgo_anual.map(r => [r.anio, r.Manufacturero])}]});
+  legend("lg-crit", [{label: "Comercial", color: c1}, {label: "Manufacturero", color: c2}], true);
+  barsH($("ch-crit"), {rows: D.criterios.map(r => ({...r, label: r.criterio})), keys: ["Comercial", "Manufacturero"],
+    colors: [c1, c2], labels: ["Comercial", "Manufacturero"], fmt: v => fmtP(v)});
+}
+
+// ============================ MODELO ============================
+function drawModelo() {
+  const c1 = css("--s1"), c2 = css("--s2"), M = D.metricas;
+  $("roc-sub").textContent = `${fmtN(D.resumen.n_prueba)} observaciones de prueba (30 %, empresas no vistas en el entrenamiento)`;
+  legend("lg-roc", [{label: `Random Forest + SMOTE (AUC ${fmtN(M.rf.auc_roc, 3)})`, color: c1}, {label: `Regresión logística + SMOTE (AUC ${fmtN(M.lr.auc_roc, 3)})`, color: c2}]);
+  const xs = [...new Set([...D.roc.rf, ...D.roc.lr].map(p => p[0]))].sort((a, b) => a - b);
+  lineChart($("ch-roc"), {xs, diag: true, height: 300, xTicks: [0, .2, .4, .6, .8, 1],
+    xFmt: (v, t) => t ? "Falsos positivos: " + fmtP(v, 0) : fmtN(v, 2), yFmt: (v, t) => t ? fmtP(v, 0) : fmtN(v, 2),
+    series: [{label: "verdaderos positivos (RF)", color: c1, pts: D.roc.rf}, {label: "verdaderos positivos (Logit)", color: c2, pts: D.roc.lr}]});
+  const filas = [["Exactitud", "exactitud"], ["Precisión", "precision"], ["Sensibilidad (recall)", "sensibilidad_recall"],
+    ["Especificidad", "especificidad"], ["F1-score", "f1"], ["AUC-ROC", "auc_roc"], ["AUC-PR", "auc_pr"], ["Puntaje de Brier (menor es mejor)", "brier"]];
+  const tb = $("t-met"); tb.replaceChildren();
+  for (const [n, k] of filas) {
+    const tr = document.createElement("tr"); tr.appendChild(txt("td", n));
+    tr.appendChild(txt("td", fmtN(M.rf[k], 3), "num")); tr.appendChild(txt("td", fmtN(M.lr[k], 3), "num")); tb.appendChild(tr);
+  }
+  const tr = document.createElement("tr"); tr.appendChild(txt("td", "IC 95 % del AUC"));
+  tr.appendChild(txt("td", `[${fmtN(M.ic_rf[0], 3)}; ${fmtN(M.ic_rf[1], 3)}]`, "num"));
+  tr.appendChild(txt("td", `[${fmtN(M.ic_lr[0], 3)}; ${fmtN(M.ic_lr[1], 3)}]`, "num")); tb.appendChild(tr);
+  let nota = `La diferencia de AUC entre Random Forest y regresión logística tiene un intervalo de confianza del 95 % de [${fmtN(M.ic_dif[0], 3)}; ${fmtN(M.ic_dif[1], 3)}]` +
+    (M.ic_dif[0] > 0 ? ": el Random Forest es superior de forma significativa." : ".");
+  if (D.oot) nota += ` En la validación fuera de tiempo (entrena hasta ${D.oot.corte}, prueba con años posteriores) el AUC fue ${fmtN(D.oot.rf, 3)} frente a ${fmtN(D.oot.lr, 3)}.`;
+  $("met-note").textContent = nota;
+  barsH($("ch-imp"), {rows: D.importancia.map(r => ({label: r.variable, v: r.valor})), keys: ["v"], colors: [c1],
+    labels: ["disminución del AUC"], fmt: v => fmtN(v, 3)});
+}
+
+// ============================ EMPRESAS ============================
+let filtradas = [], pagina = 0, selNit = null;
+const PAG = 20;
+function initEmpresas() {
+  const deps = [...new Set(D.empresas.map(e => e.depto))].sort();
+  for (const s of ["Comercial", "Manufacturero"]) $("f-sector").appendChild(new Option(s, s));
+  for (const d of deps) $("f-depto").appendChild(new Option(d, d));
+  for (const id of ["f-q", "f-sector", "f-depto", "f-nivel"]) $(id).addEventListener("input", () => { pagina = 0; filtrar(); });
+  $("pg-prev").onclick = () => { if (pagina > 0) { pagina--; tabla(); } };
+  $("pg-next").onclick = () => { if ((pagina + 1) * PAG < filtradas.length) { pagina++; tabla(); } };
+  filtrar();
+}
+function filtrar() {
+  const q = $("f-q").value.trim().toUpperCase(), s = $("f-sector").value, d = $("f-depto").value, n = $("f-nivel").value;
+  filtradas = D.empresas.filter(e => (!s || e.sector === s) && (!d || e.depto === d) && (!n || e.nivel === n) &&
+    (!q || String(e.nit).includes(q) || e.rs.toUpperCase().includes(q)));
+  const T = $("niv-tiles"); T.replaceChildren();
+  for (const k of ["Alto", "Medio", "Bajo"]) {
+    const c = filtradas.filter(e => e.nivel === k).length;
+    const card = document.createElement("div"); card.className = "card kpi";
+    const lab = document.createElement("div"); lab.className = "lab"; lab.appendChild(badge(k)); card.appendChild(lab);
+    card.appendChild(txt("div", fmtN(c), "val")); card.appendChild(txt("div", filtradas.length ? fmtP(c / filtradas.length) + " de las empresas filtradas" : "", "note"));
+    T.appendChild(card);
+  }
+  $("t-emp-title").textContent = `Empresas (${fmtN(filtradas.length)})`;
+  tabla();
+}
+function tabla() {
+  const tb = $("t-emp"); tb.replaceChildren();
+  for (const e of filtradas.slice(pagina * PAG, (pagina + 1) * PAG)) {
+    const tr = document.createElement("tr"); tr.className = "click" + (e.nit === selNit ? " sel" : "");
+    const td = document.createElement("td"); td.appendChild(txt("div", e.rs)); td.appendChild(txt("div", "NIT " + e.nit, "note")); tr.appendChild(td);
+    tr.appendChild(txt("td", e.sector)); tr.appendChild(txt("td", fmtP(e.prob), "num"));
+    const tn = document.createElement("td"); tn.appendChild(badge(e.nivel)); tr.appendChild(tn);
+    tr.onclick = () => { selNit = e.nit; tabla(); detalle(e); };
+    tb.appendChild(tr);
+  }
+  if (!filtradas.length) { const tr = document.createElement("tr"); const td = txt("td", "No hay empresas con estos filtros.", "empty"); td.colSpan = 4; tr.appendChild(td); tb.appendChild(tr); }
+  $("pg-info").textContent = filtradas.length ? `${pagina * PAG + 1}–${Math.min((pagina + 1) * PAG, filtradas.length)} de ${fmtN(filtradas.length)}` : "";
+}
+function detalle(e) {
+  const B = $("detalle"); B.replaceChildren();
+  B.appendChild(txt("h3", e.rs));
+  B.appendChild(txt("div", `NIT ${e.nit} · ${e.sector} · CIIU ${e.ciiu} ${e.act} · ${e.depto} · Estado: ${e.estado}`, "meta"));
+  const p = document.createElement("div"); p.className = "pair";
+  const a = document.createElement("div"); a.appendChild(txt("div", `Probabilidad de riesgo ${D.anio + 1}–${D.anio + D.horizonte}`, "lab"));
+  a.appendChild(txt("div", fmtP(e.prob), "big")); a.appendChild(badge(e.nivel)); p.appendChild(a); B.appendChild(p);
+  B.appendChild(txt("h4", "Indicadores que más elevan su riesgo"));
+  B.appendChild(txt("div", e.factores || "—"));
+  B.appendChild(txt("h4", "Trayectoria de riesgo"));
+  const ch = document.createElement("div"); B.appendChild(ch);
+  const t = D.trayectorias[String(e.nit)] || [];
+  if (t.length > 1) {
+    const u = D.umbrales;
+    lineChart(ch, {xs: t.map(r => r[0]), height: 200, xFmt: v => String(v), yFmt: v => fmtP(v, 0),
+      bands: [[u.Bajo[0], u.Bajo[1], css("--band-good")], [u.Medio[0], u.Medio[1], css("--band-warn")], [u.Alto[0], 1, css("--band-crit")]],
+      series: [{label: "probabilidad", color: css("--ink2"), dots: true, pts: t}]});
+    B.appendChild(txt("p", "Los años usados para entrenar el modelo se muestran como referencia descriptiva.", "note"));
+  } else ch.appendChild(txt("div", "Solo hay un año de información para esta empresa.", "empty"));
+  B.appendChild(txt("h4", "Indicadores frente a la mediana del sector"));
+  const tbl = document.createElement("table"); const th = document.createElement("thead"); const hr = document.createElement("tr");
+  for (const [h, c] of [["Indicador", ""], ["Empresa", "num"], ["Mediana sector", "num"]]) hr.appendChild(txt("th", h, c));
+  th.appendChild(hr); tbl.appendChild(th); const tb = document.createElement("tbody");
+  for (const v of D.financieras) {
+    const i = D.variables.indexOf(v), tr = document.createElement("tr");
+    tr.appendChild(txt("td", D.nombres[v])); tr.appendChild(txt("td", fmtVar(v, e.x[i]), "num")); tr.appendChild(txt("td", fmtVar(v, D.medianas[e.sector][i]), "num"));
+    tb.appendChild(tr);
+  }
+  tbl.appendChild(tb); B.appendChild(tbl);
+  const btn = txt("button", "Simular esta empresa", "btn primary"); btn.style.marginTop = "12px";
+  btn.onclick = () => { cargarSim(e); abrir("simulador"); }; B.appendChild(btn);
+}
+
+// ============================ SIMULADOR ============================
+const PCT = new Set(["endeudamiento", "roa", "capital_trabajo_at", "ebitda_ventas", "ganancias_acum_at", "deuda_financiera_at", "crec_ventas", "flujo_operativo_pt"]);
+const PUNTOS = new Set(["tasa_banrep", "inflacion", "crec_pib", "crec_pib_sector"]);
+function fmtVar(v, x) {
+  if (x == null || isNaN(x)) return "—";
+  if (PCT.has(v)) return fmtP(x);
+  if (PUNTOS.has(v)) return fmtN(x, 2) + " %";
+  if (v === "trm_promedio") return "$" + fmtN(x, 0);
+  if (v === "cobertura_intereses" && x >= 99.99) return "sin gastos financieros";
+  return fmtN(x, 2) + " veces";
+}
+let simBase = null, simX = null, simSector = "Comercial";
+function cargarSim(e) {
+  simBase = e.x.slice(); simX = e.x.slice(); simSector = e.sector;
+  $("s-title").textContent = e.rs ? `${e.rs} (NIT ${e.nit})` : e.titulo;
+  $("s-hor").textContent = `Probabilidad de presentar señales de insolvencia en los ${D.horizonte} años siguientes a los estados financieros de ${D.anio}.`;
+  construirSliders(); simular();
+}
+function construirSliders() {
+  const M = D.web.modelo;
+  for (const [cont, vars] of [["s-fin", D.financieras], ["s-mac", D.macro]]) {
+    const C = $(cont); C.replaceChildren();
+    for (const v of vars) {
+      const i = D.variables.indexOf(v), lo = M.inf[i], hi = M.sup[i];
+      const val = simX[i] == null || isNaN(simX[i]) ? M.mediana[i] : simX[i];
+      const row = document.createElement("div"); row.className = "slider";
+      const lab = txt("label", D.nombres[v]); const out = document.createElement("output");
+      const inp = document.createElement("input"); inp.type = "range"; inp.min = lo; inp.max = hi; inp.step = (hi - lo) / 400;
+      inp.value = Math.min(Math.max(val, lo), hi); inp.setAttribute("aria-label", D.nombres[v]); lab.htmlFor = inp.id = "sl-" + v;
+      const ref = txt("div", `Real: ${fmtVar(v, simBase[i])} · Mediana ${simSector.toLowerCase()}: ${fmtVar(v, D.medianas[simSector][i])}`, "ref");
+      out.textContent = fmtVar(v, val);
+      inp.addEventListener("input", () => { simX[i] = +inp.value; out.textContent = fmtVar(v, simX[i]); row.classList.toggle("changed", true); simular(); });
+      row.append(lab, out, inp, ref); C.appendChild(row);
+    }
+  }
+}
+function simular() {
+  const p0 = predict(simBase), p1 = predict(simX), n0 = nivel(p0), n1 = nivel(p1);
+  $("s-p0").textContent = fmtP(p0); $("s-p1").textContent = fmtP(p1);
+  $("s-n0").replaceChildren(badge(n0)); $("s-n1").replaceChildren(badge(n1));
+  const d = p1 - p0, D_ = $("s-d");
+  D_.textContent = Math.abs(d) < 0.0005 ? "sin cambio" : (d > 0 ? "▲ +" : "▼ −") + fmtN(Math.abs(d) * 100, 1) + " p. p.";
+  D_.className = "delta " + (d < -0.0005 ? "down" : d > 0.0005 ? "up" : "");
+  gauge(p0, p1);
+  const sens = [];
+  for (const v of D.financieras) {
+    const i = D.variables.indexOf(v), x = simX.slice(); x[i] = D.medianas[simSector][i];
+    const red = p1 - predict(x);
+    if (red > 0.002) sens.push({label: D.nombres[v], v: red});
+  }
+  sens.sort((a, b) => b.v - a.v);
+  const S = $("ch-sens");
+  if (sens.length) barsH(S, {rows: sens.slice(0, 6), keys: ["v"], colors: [css("--good")], labels: ["menos probabilidad de riesgo"], fmt: v => "−" + fmtN(v * 100, 1) + " p. p."});
+  else { S.replaceChildren(txt("div", "Ningún indicador por debajo de la mediana del sector: la empresa ya está igual o mejor que la mediana en cada uno.", "empty")); }
+  $("s-note").textContent = `El simulador usa una versión liviana del Random Forest (100 árboles) que corre en el navegador: AUC ${fmtN(D.web.auc, 3)} en el conjunto de prueba y correlación de ${fmtN(D.web.corr, 3)} con las probabilidades del modelo de la tesis (AUC ${fmtN(D.metricas.rf.auc_roc, 3)}). Por eso la probabilidad puede diferir levemente de la tabla de empresas. Es un ejercicio de sensibilidad, no una relación causal.`;
+}
+function gauge(p0, p1) {
+  const box = $("ch-gauge"); box.replaceChildren();
+  const W = Math.max(280, box.clientWidth), H = 46, m = 8, X = v => m + v * (W - 2 * m);
+  const svg = el("svg", {width: "100%", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Escala de probabilidad"}, box);
+  const u = D.umbrales, cols = {Bajo: "--good", Medio: "--warn", Alto: "--crit"};
+  for (const [k, [a, b]] of Object.entries(u)) el("rect", {x: X(a) + 1, y: 14, width: X(Math.min(b, 1)) - X(a) - 2, height: 10, rx: 3, fill: css(cols[k]), opacity: .35}, svg);
+  for (const t of [0, .3, .6, 1]) el("text", {x: X(t), y: 40, "text-anchor": t === 0 ? "start" : t === 1 ? "end" : "middle"}, svg).textContent = fmtP(t, 0);
+  el("line", {x1: X(p0), x2: X(p0), y1: 8, y2: 30, stroke: css("--muted"), "stroke-width": 2, "stroke-dasharray": "3 2"}, svg);
+  el("circle", {cx: X(p1), cy: 19, r: 7, fill: css("--ink"), stroke: css("--surface"), "stroke-width": 2}, svg);
+}
+function initSim() {
+  const dl = $("s-list");
+  for (const e of D.empresas) dl.appendChild(new Option(`${e.nit} · ${e.rs}`));
+  $("s-q").addEventListener("change", () => {
+    const nit = parseInt($("s-q").value, 10), e = D.empresas.find(z => z.nit === nit) ||
+      D.empresas.find(z => z.rs.toUpperCase().includes($("s-q").value.trim().toUpperCase()));
+    if (e) cargarSim(e);
+  });
+  const tipica = s => ({x: D.medianas[s].slice(), sector: s, titulo: `Empresa típica del sector ${s.toLowerCase()} (mediana de cada indicador)`});
+  $("s-tip-c").onclick = () => cargarSim(tipica("Comercial"));
+  $("s-tip-m").onclick = () => cargarSim(tipica("Manufacturero"));
+  $("s-reset").onclick = () => { simX = simBase.slice(); construirSliders(); simular(); };
+  cargarSim(D.empresas[Math.floor(D.empresas.length / 2)]);
+}
+
+// ============================ navegación ============================
+const dibujado = {};
+function abrir(tab) {
+  for (const b of document.querySelectorAll("nav button")) b.setAttribute("aria-selected", b.dataset.tab === tab);
+  for (const s of document.querySelectorAll("main section")) s.hidden = s.id !== tab;
+  if (!dibujado[tab]) { dibujado[tab] = true; ({resumen: drawResumen, modelo: drawModelo, empresas: () => {}, simulador: () => simular()})[tab](); }
+  history.replaceState(null, "", "#" + tab);
+}
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => {
+  const t = document.querySelector("nav button[aria-selected=true]").dataset.tab;
+  if (t === "resumen") drawResumen(); else if (t === "modelo") drawModelo(); else if (t === "simulador") simular();
+  else if (selNit) detalle(D.empresas.find(e => e.nit === selNit)); }, 150); });
+
+async function cargar() {
+  const b64 = $("datos").textContent.trim(), bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"));
+  D = JSON.parse(await new Response(stream).text());
+  $("h-anios").textContent = `${D.resumen.anios[0]}–${D.resumen.anios[1]}`;
+  const L = $("links");
+  if (D.repo) { const a = txt("a", "Código en GitHub"); a.href = D.repo; L.appendChild(a); }
+  if (D.colab) { const a = txt("a", "Ejecutar el modelo en Google Colab"); a.href = D.colab; L.appendChild(a); }
+  $("cargando").remove(); $("app").hidden = false;
+  for (const b of document.querySelectorAll("nav button")) b.onclick = () => abrir(b.dataset.tab);
+  initEmpresas(); initSim();
+  const h = location.hash.slice(1);
+  abrir(["resumen", "modelo", "empresas", "simulador"].includes(h) ? h : "resumen");
+}
+cargar().catch(err => { $("cargando").textContent = "No fue posible cargar los datos: " + err.message; });
+</script>
+</body>
+</html>
