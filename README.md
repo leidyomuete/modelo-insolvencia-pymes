@@ -72,6 +72,7 @@ cuaderno lo regeneran cuando cambia el modelo.
 
 Cifras en miles de pesos. Los datos no se suben al repositorio (son pesados); se descargan del portal SIIS.
 
+
 ## Resultados que genera
 
 `01_bitacora_depuracion.csv`, `02_prevalencia_criterios.csv`, `02_distribucion_etiqueta.csv`,
