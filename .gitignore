@@ -1,0 +1,11 @@
+# Datos pesados o confidenciales: no se suben
+*.xlsx
+*.pkl
+*.joblib
+resultados/
+resultados_colab/
+__pycache__/
+.ipynb_checkpoints/
+# Si se suben: series macro y base consolidada liviana (datos públicos, para Colab)
+!data/macro_colombia.csv
+!data/panel_consolidado.parquet
