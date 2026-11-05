@@ -1,3 +1,5 @@
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/leidyomuete/modelo-insolvencia-pymes/blob/main/Modelo_insolvencia_Colab.ipynb)
+
 # Modelo predictivo de riesgo de insolvencia — Pymes manufactureras y comerciales (Colombia)
 
 Proyecto de grado — Maestría en Analítica de Datos para Contabilidad y Auditoría, Universidad Externado de Colombia.
@@ -36,9 +38,8 @@ python main.py --desde 3  # solo re-entrena, reutilizando la base ya construida
 
 ## Ejecutar en Google Colab (sin instalar nada)
 
-Abra `Modelo_insolvencia_Colab.ipynb` en [Google Colab](https://colab.research.google.com) (*Archivo → Abrir cuaderno → GitHub*
-y pegue la URL de este repositorio) y elija **Entorno de ejecución → Ejecutar todas**.
-En la celda 1 seleccione `FUENTE = GitHub` y escriba la URL del repositorio. La base consolidada
+Haga clic en el botón **Abrir en Colab** de arriba y elija **Entorno de ejecución → Ejecutar todas**.
+El cuaderno descarga este repositorio automáticamente. La base consolidada
 (`data/panel_consolidado.parquet`, 11 MB) reproduce la depuración de los 40 archivos del SIIS, así que no se
 necesita descargar los Excel. Modo rápido: unos 5–10 minutos; modo completo: 30–45 minutos.
 
