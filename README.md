@@ -18,12 +18,14 @@ modelo_insolvencia/
 ├── requirements.txt
 ├── data/
 │   ├── macro_colombia.csv   <- tasa BanRep, IPC, PIB, TRM (Banco de la República)
-│   └── panel_consolidado.parquet  <- base depurada 2016–2025 (82.108 estados financieros)
+│   ├── panel_consolidado.parquet  <- base depurada 2016–2025 (82.108 estados financieros)
+│   └── plantilla_empresas_nuevas.xlsx  <- plantilla para calificar empresas nuevas
 ├── src/
 │   ├── carga.py         <- SRS-01 lectura y depuración de los 4 reportes SIIS
 │   ├── variables.py     <- SRS-02 indicadores (Tabla 1) + etiqueta t+1..t+3
 │   ├── modelado.py      <- SRS-03/04/05 SMOTE, RF, Logit, métricas, bootstrap, ROC
-│   └── reporte.py       <- SRS-06/07 calificación por empresa, factores (SHAP), Excel
+│   ├── reporte.py       <- SRS-06/07 calificación por empresa, factores (SHAP), Excel
+│   └── nuevas.py        <- calificación de empresas que no están en la base (cifras o plantilla Excel)
 └── resultados/          <- se llena al ejecutar
 ```
 
@@ -42,6 +44,11 @@ Haga clic en el botón **Abrir en Colab** de arriba y elija **Entorno de ejecuci
 El cuaderno descarga este repositorio automáticamente. La base consolidada
 (`data/panel_consolidado.parquet`, 11 MB) reproduce la depuración de los 40 archivos del SIIS, así que no se
 necesita descargar los Excel. Modo rápido: unos 5–10 minutos; modo completo: 30–45 minutos.
+
+### Calificar empresas nuevas
+En el cuaderno, la celda 15 califica una empresa escribiendo sus cifras (miles de pesos) y la celda 16 califica
+varias empresas a la vez con `data/plantilla_empresas_nuevas.xlsx`. La celda 13 muestra la trayectoria de riesgo
+de una empresa de la base por su NIT.
 
 ## Fuentes de datos (carpeta `bd/pymes_individuales-AAAA/`)
 

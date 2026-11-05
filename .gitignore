@@ -9,3 +9,4 @@ __pycache__/
 # Si se suben: series macro y base consolidada liviana (datos públicos, para Colab)
 !data/macro_colombia.csv
 !data/panel_consolidado.parquet
+!data/plantilla_empresas_nuevas.xlsx
